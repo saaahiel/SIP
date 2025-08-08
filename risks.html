@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Kapitalist — Infographics</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="config.js"></script>
+</head>
+<body>
+  <header class="container header">
+    <a class="brand" href="index.html"><div class="logo">K</div><div><div style="font-weight:600">KAPITALIST</div><div style="font-size:13px;color:rgba(234,230,223,0.65)">Private Wealth • SIP</div></div></a>
+    <nav class="nav">
+      <a href="index.html">Home</a>
+      <a href="numbers.html">Numbers</a>
+      <a href="risks.html">Infographics</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <div class="card">
+      <h2 style="margin:0">Infographics — the essentials</h2>
+      <p style="opacity:0.86;margin-top:8px">Click any tile to reveal a concise explanation and visual example.</p>
+
+      <div class="tiles" style="margin-top:18px">
+        <div class="tile" onclick="toggleInfo(0)">
+          <h3>Rupee-cost averaging</h3>
+          <p>Buying more units when price is low, fewer units when price is high — averages risk over time.</p>
+        </div>
+        <div class="tile" onclick="toggleInfo(1)">
+          <h3>Compounding</h3>
+          <p>Returns generate returns. Time amplifies growth exponentially.</p>
+        </div>
+        <div class="tile" onclick="toggleInfo(2)">
+          <h3>Cost of Delay</h3>
+          <p>Missing years is costly. Losing even 5 years can cut corpus by many lakhs.</p>
+        </div>
+      </div>
+
+      <div id="infoPanel" style="margin-top:18px" class="card">
+        <div id="infoContent">Click a tile above to explore.</div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">Kapitalist • Demo — not financial advice.</footer>
+
+  <div class="wa">
+    <div class="label">Talk to an advisor</div>
+    <a id="waBtn" class="btn" href="#" target="_blank" rel="noreferrer">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M21 12.5a8.5 8.5 0 1 0-1.59 4.89L21 21l-3.61-1.51A8.47 8.47 0 0 0 21 12.5z" fill="#07110b"/></svg>
+    </a>
+  </div>
+
+  <script src="config.js"></script>
+  <script>
+    (function(){ document.getElementById('waBtn').href = `https://wa.me/${window.KAP_CONFIG.WA_PHONE}?text=${encodeURIComponent(window.KAP_CONFIG.WA_MESSAGE)}` })();
+
+    const panels = [
+      {
+        title:'Rupee-cost averaging',
+        html:`<h3 style="margin:0">Rupee-cost averaging</h3>
+              <p style="opacity:0.9">When you invest a fixed amount every month, you buy more units when price falls and fewer when price rises. Over time this reduces the average cost per unit versus trying to time the market.</p>
+              <div style="height:12px"></div>
+              <canvas id="rcaChart" style="height:220px"></canvas>`
+      },
+      {
+        title:'Compounding',
+        html:`<h3 style="margin:0">Compounding</h3>
+              <p style="opacity:0.9">Earnings on prior returns accelerate growth. Example: a consistent SIP of ₹10k/month at 12% annually reaches far more in 25 years than in 15 years.</p>
+              <div style="height:10px"></div>
+              <canvas id="compChart" style="height:220px"></canvas>`
+      },
+      {
+        title:'Cost of Delay',
+        html:`<h3 style="margin:0">Cost of Delay</h3>
+              <p style="opacity:0.9">Delaying a SIP shrinks the compound interest window. Example visualization compares starting today vs starting after 5 years with same monthly amounts.</p>
+              <div style="height:10px"></div>
+              <canvas id="delayChart" style="height:220px"></canvas>`
+      }
+    ];
+
+    function toggleInfo(i){
+      const content = document.getElementById('infoContent');
+      content.innerHTML = panels[i].html;
+      // after injecting canvases, render small example charts
+      if(i===0){
+        // RCA demo — price volatility buying units
+        const ctx = document.getElementById('rcaChart').getContext('2d');
+        const prices = [100,120,80,90,110,70,95,100,85,120]; // synthetic
+        const units = prices.map(p=> (1000/p).toFixed(2));
+        new Chart(ctx, {type:'bar', data:{labels:prices.map((p,i)=>`m${i+1}`), datasets:[{label:'Price', data:prices, backgroundColor:'rgba(182,143,74,0.9)'}]}, options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});
+      }else if(i===1){
+        const ctx = document.getElementById('compChart').getContext('2d');
+        const years = Array.from({length:21},(_,i)=>i);
+        function proj(m=10000, yrs=20, r=0.12){
+          let b=0; const a=[];
+          for(let y=0;y<=yrs;y++){ for(let mth=0;mth<12;mth++) b=(b+m)*(1+r/12); a.push(Math.round(b)); }
+          // sample yearly
+          return a.filter((_,idx)=> idx%12===0).slice(0,years.length);
+        }
+        const s = proj(10000,20,0.12);
+        new Chart(ctx, {type:'line', data:{labels:years, datasets:[{label:'Corpus', data:s, borderColor:'rgba(182,143,74,0.98)', backgroundColor:'rgba(182,143,74,0.06)',tension:0.35,pointRadius:0}]}, options:{plugins:{legend:{display:false}},scales:{y:{ticks:{callback:(v)=> v>100000? '₹'+(v/100000).toFixed(1)+'L': '₹'+v}}}});
+      }else{
+        const ctx = document.getElementById('delayChart').getContext('2d');
+        // compare start now vs delay (sample)
+        function sip(m,yrs,r){ let b=0,a=[]; for(let y=0;y<=yrs;y++){ for(let mth=0;mth<12;mth++) b=(b+m)*(1+r/12); a.push(Math.round(b/100000)); } return a.filter((_,idx)=> idx%12===0);}
+        const now = sip(10000,20,0.12);
+        const later = [0,0,0,0,0].concat(sip(10000,15,0.12)); // 5 years delay
+        const labels = Array.from({length:21},(_,i)=>i+'y');
+        new Chart(ctx, {type:'line', data:{labels, datasets:[{label:'Start Now', data:now, borderColor:'rgba(182,143,74,0.98)',tension:0.35, pointRadius:0},{label:'Start after 5y', data:later, borderColor:'rgba(120,120,120,0.9)',tension:0.35, pointRadius:0}]}, options:{plugins:{legend:{position:'top'}},scales:{y:{beginAtZero:true}}}});
+      }
+    }
+
+    // init: show first
+    document.addEventListener('DOMContentLoaded', ()=> toggleInfo(0));
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</body>
+</html>

@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>KAPITALIST — Do you have a SIP?</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="config.js"></script>
+</head>
+<body>
+  <header class="container header">
+    <a class="brand" href="index.html" aria-label="Kapitalist home">
+      <div class="logo" aria-hidden="true">K</div>
+      <div>
+        <div class="name">KAPITALIST</div>
+        <div style="font-size:12px;color:rgba(235,232,225,0.65)">Private Wealth • SIP</div>
+      </div>
+    </a>
+
+    <nav class="nav" aria-label="Primary">
+      <a href="index.html">Home</a>
+      <a href="numbers.html">Numbers</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <div class="hero-left">
+        <h1>Do you have a <span class="accent">SIP</span>?</h1>
+        <p class="lead">A disciplined monthly plan that harnesses time and compounding. Minimal effort. Long-term results.</p>
+        <div class="badge">Quiet process • Evidence-first</div>
+
+        <div class="actions fade" style="margin-top:28px">
+          <a href="numbers.html"><button class="btn">Explore numbers</button></a>
+          <a href="contact.html"><button class="btn btn-primary">Start SIP</button></a>
+        </div>
+
+        <div style="margin-top:28px" class="tiles">
+          <div class="tile card" role="button" onclick="location.href='numbers.html'">
+            <div style="font-size:13px;color:var(--muted-2)">Projection</div>
+            <div style="height:8px"></div>
+            <div class="mini-stats">
+              <div>
+                <div class="num">₹2.3 Cr</div>
+                <div class="meta">₹15k / month · 20 years</div>
+              </div>
+              <div style="text-align:right">
+                <div style="font-size:13px;color:var(--muted-2)">Avg Nifty (example)</div>
+                <div style="font-weight:700">14.2%</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="tile card" role="button" onclick="location.href='numbers.html#delay'">
+            <div style="font-size:13px;color:var(--muted-2)">Risk</div>
+            <div style="height:8px"></div>
+            <div style="font-weight:600">Cost of delay</div>
+            <div style="font-size:13px;margin-top:8px;color:var(--muted-2)">Postponing even a few years materially reduces final corpus.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside class="hero-right card">
+        <div style="font-size:13px;color:var(--muted-2)">Interactive projection</div>
+        <div style="height:14px"></div>
+        <canvas id="miniChart" class="chart-wrap" aria-label="small projection chart"></canvas>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px">
+          <div>
+            <div style="font-size:15px;font-weight:700" id="miniCorpus">—</div>
+            <div style="font-size:12px;color:var(--muted-2)">sample: ₹15k / month · 20 yrs</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:12px;color:var(--muted-2)">Assumption</div>
+            <div style="font-weight:700">14.2% p.a.</div>
+          </div>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <footer class="footer">Kapitalist — Private Wealth (demo). This is educational; not financial advice. Methodology & calculations are transparent on the Numbers page.</footer>
+
+  <!-- floating WA -->
+  <div class="wa" aria-hidden="false">
+    <div class="label">Talk to an advisor</div>
+    <a id="waFloat" class="btn" href="#" target="_blank" rel="noopener noreferrer" aria-label="Message on WhatsApp">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M21 12.5a8.5 8.5 0 1 0-1.59 4.89L21 21l-3.61-1.51A8.47 8.47 0 0 0 21 12.5z" fill="#07110b"/></svg>
+    </a>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="config.js"></script>
+  <script src="script.js"></script>
+  <script>
+    // bind WA
+    bindWhatsApp(document.getElementById('waFloat'));
+
+    // mini chart: sample 15k, 20 yrs, 14.2%
+    (function(){
+      const monthly = 15000, years = 20, ann = 14.2;
+      const labels = Array.from({length: years+1}, (_,i)=> i===0 ? 'Now' : `${i}y`);
+      const data = sipSeries(monthly, years, ann).map(v => Math.round(v / 100000)); // in Lakh units
+      const ctx = document.getElementById('miniChart').getContext('2d');
+      makeChart(ctx, {
+        type: 'line',
+        data: { labels, datasets: [{ label: 'Corpus (Lakh ₹)', data, borderColor: 'rgba(191,161,97,0.98)', backgroundColor:'rgba(191,161,97,0.06)', tension:0.36, pointRadius:0 }]},
+        options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:{display:false}, y:{display:false}}}
+      });
+      // show final corpus
+      const final = sipFutureValue(monthly, years, ann);
+      document.getElementById('miniCorpus').textContent = fmtINR(Math.round(final));
+    })();
+
+    // reveal
+    document.querySelectorAll('.fade').forEach((n,i)=> setTimeout(()=> n.classList.add('visible'), 150 + i*80));
+  </script>
+</body>
+</html>

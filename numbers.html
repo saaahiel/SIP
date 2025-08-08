@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Kapitalist — Numbers & Methodology</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="config.js"></script>
+</head>
+<body>
+  <header class="container header">
+    <a class="brand" href="index.html"><div class="logo">K</div><div><div class="name">KAPITALIST</div><div style="font-size:12px;color:rgba(235,232,225,0.65)">Private Wealth • SIP</div></div></a>
+    <nav class="nav"><a href="index.html">Home</a><a href="numbers.html">Numbers</a><a href="contact.html">Contact</a></nav>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <h2 style="margin:0;font-size:20px">SIP Calculator — exact monthly compounding</h2>
+      <p style="opacity:0.86;margin-top:8px">We use exact monthly compounding: monthly deposits, compounded monthly at the annual rate provided.</p>
+
+      <div class="info-grid">
+        <div>
+          <div class="controls">
+            <div class="control">
+              <label>Monthly SIP (₹): <strong id="dispMonthly">15000</strong></label>
+              <input id="monthly" type="range" min="1000" max="200000" step="500" value="15000">
+            </div>
+            <div class="control">
+              <label>Years: <strong id="dispYears">20</strong></label>
+              <input id="years" type="range" min="1" max="40" step="1" value="20">
+            </div>
+            <div class="control">
+              <label>Expected annual return (%): <strong id="dispReturn">14.2</strong></label>
+              <input id="annual" type="range" min="3" max="25" step="0.1" value="14.2">
+            </div>
+          </div>
+
+          <div style="margin-top:18px" class="kv">
+            <div><div style="font-size:13px;color:var(--muted-2)">Estimated corpus</div><div style="font-weight:700;font-size:18px" id="estCorpus">—</div></div>
+            <div><div style="font-size:13px;color:var(--muted-2)">Total invested</div><div style="font-weight:700;font-size:18px" id="totalInvested">—</div></div>
+          </div>
+
+          <div style="margin-top:20px">
+            <a href="contact.html"><button class="btn btn-primary">Start SIP — I want help</button></a>
+            <button class="btn" onclick="presetExample()">Example: ₹10k @12%</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <canvas id="chartSIP" class="chart-wrap" aria-label="SIP growth chart"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" style="margin-top:24px" id="delay">
+      <h3 style="margin:0">Cost of Delay — concrete example</h3>
+      <p style="opacity:0.86;margin-top:8px">Same monthly amount, delayed start vs start today. We show exact final difference.</p>
+      <div style="height:12px"></div>
+      <div class="grid-2">
+        <div class="card">
+          <canvas id="chartDelay" class="chart-wrap" aria-label="Cost of delay chart"></canvas>
+        </div>
+        <div>
+          <div id="delaySummary" style="font-size:14px;color:var(--muted-2)"></div>
+          <div style="height:16px"></div>
+          <div style="font-size:13px">Methodology</div>
+          <div style="margin-top:8px;font-size:13px;color:var(--muted-2)">We calculate future value by iterating monthly deposits and monthly compounding (rate = annual/12). No assumptions about dividends or taxes are embedded; users must adjust assumptions themselves.</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">Transparent calculations • Not financial advice. Numbers are illustrative; past returns don’t guarantee future returns.</footer>
+
+  <div class="wa"><div class="label">Talk to an advisor</div><a id="waBtn" class="btn" href="#" target="_blank" rel="noreferrer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M21 12.5a8.5 8.5 0 1 0-1.59 4.89L21 21l-3.61-1.51A8.47 8.47 0 0 0 21 12.5z" fill="#07110b"/></svg></a></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="config.js"></script>
+  <script src="script.js"></script>
+  <script>
+    // WA bind
+    bindWhatsApp(document.getElementById('waBtn'));
+
+    // DOM refs
+    const monthlyEl = document.getElementById('monthly'), yearsEl = document.getElementById('years'), annualEl = document.getElementById('annual');
+    const dispMonthly = document.getElementById('dispMonthly'), dispYears=document.getElementById('dispYears'), dispReturn=document.getElementById('dispReturn');
+    const estCorpus = document.getElementById('estCorpus'), totalInvested = document.getElementById('totalInvested');
+
+    // charts
+    const ctxSIP = document.getElementById('chartSIP').getContext('2d');
+    const ctxDelay = document.getElementById('chartDelay').getContext('2d');
+    let sipChart, delayChart;
+
+    function updateCharts(){
+      const monthly = Number(monthlyEl.value);
+      const years = Number(yearsEl.value);
+      const ann = Number(annualEl.value);
+
+      dispMonthly.textContent = numberWithCommas(monthly);
+      dispYears.textContent = years;
+      dispReturn.textContent = ann;
+
+      const labels = Array.from({length:years+1},(_,i)=> i===0 ? 'Now' : `${i}y`);
+      const series = sipSeries(monthly, years, ann);
+      const invested = monthly * 12 * years;
+      const final = series[series.length-1] || 0;
+
+      // format
+      estCorpus.textContent = fmtINR(Math.round(final));
+      totalInvested.textContent = fmtINR(invested);
+
+      // SIP chart
+      if(sipChart) sipChart.destroy();
+      sipChart = makeChart(ctxSIP, {
+        type:'line',
+        data:{ labels, datasets:[ { label:'Corpus', data: series, borderColor:'rgba(191,161,97,0.98)', backgroundColor:'rgba(191,161,97,0.06)', tension:0.36, pointRadius:0 } ] },
+        options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{ticks:{callback:(v)=> fmtINR(Math.round(v))}}} }
+      });
+
+      // delay chart: start now vs start after 5 years
+      const laterYears = Math.max(1, years-5);
+      const nowSeries = sipSeries(monthly, years, ann);
+      const laterSeriesRaw = sipSeries(monthly, laterYears, ann);
+      // pad later with zeros for first 5 years
+      const pad = Array(5+1).fill(0); // 0..5 inclusive to align yearly array length
+      let laterSeries = pad.concat(laterSeriesRaw.slice(1)); // remove initial 0 duplicate to align
+      // ensure lengths
+      while(laterSeries.length < nowSeries.length) laterSeries.push(laterSeries[laterSeries.length-1] || 0);
+
+      if(delayChart) delayChart.destroy();
+      delayChart = makeChart(ctxDelay, {
+        type:'line',
+        data:{ labels, datasets:[
+            { label:'Start Today', data: nowSeries, borderColor:'rgba(191,161,97,0.98)', backgroundColor:'rgba(191,161,97,0.04)', tension:0.36, pointRadius:0 },
+            { label:'Start after 5y', data: laterSeries, borderColor:'rgba(140,140,140,0.9)', backgroundColor:'rgba(140,140,140,0.03)', tension:0.36, pointRadius:0 }
+        ]},
+        options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'top'}}, scales:{y:{ticks:{callback:(v)=> fmtINR(Math.round(v))}}} }
+      });
+
+      // delay summary
+      const finalNow = nowSeries[nowSeries.length-1] || 0;
+      const finalLater = laterSeries[laterSeries.length-1] || 0;
+      const loss = Math.max(0, finalNow - finalLater);
+      document.getElementById('delaySummary').innerHTML = `<div style="font-weight:700;font-size:20px">${fmtINR(Math.round(finalNow))}</div>
+        <div style="font-size:13px;color:var(--muted-2)">Start today final corpus</div>
+        <div style="height:12px"></div>
+        <div style="font-weight:700;font-size:20px">${fmtINR(Math.round(finalLater))}</div>
+        <div style="font-size:13px;color:var(--muted-2)">Start after 5y final corpus</div>
+        <div style="height:12px"></div>
+        <div style="font-weight:700;color:var(--gold)">${fmtINR(Math.round(loss))}</div>
+        <div style="font-size:13px;color:var(--muted-2)">Loss from delaying 5 years (illustrative)</div>`;
+
+    }
+
+    monthlyEl.addEventListener('input', updateCharts);
+    yearsEl.addEventListener('input', updateCharts);
+    annualEl.addEventListener('input', updateCharts);
+
+    // preset
+    function presetExample(){
+      monthlyEl.value = 10000;
+      annualEl.value = 12.0;
+      yearsEl.value = 20;
+      updateCharts();
+    }
+
+    // init
+    updateCharts();
+  </script>
+</body>
+</html>

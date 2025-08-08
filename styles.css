@@ -1,0 +1,96 @@
+/* styles.css — refined luxe system */
+:root{
+  --bg:#070707;
+  --panel:#0f1112;
+  --muted:#ebe8e3;
+  --muted-2:#cfc8bf;
+  --gold:#bfa161;
+  --gold-2:#a88445;
+  --glass: rgba(255,255,255,0.03);
+  --card-shadow: 0 18px 50px rgba(2,2,2,0.65);
+  --maxw:1100px;
+  --radius:14px;
+  --ease: cubic-bezier(.2,.9,.3,1);
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  background:linear-gradient(180deg,var(--bg), #020202 140%);
+  color:var(--muted);
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  line-height:1.45;
+  overflow-y:auto;
+}
+
+/* utility container */
+.container{max-width:var(--maxw);margin:0 auto;padding:36px}
+
+/* header */
+.header{display:flex;align-items:center;justify-content:space-between;padding:20px 0}
+.brand{display:flex;align-items:center;gap:14px;text-decoration:none;color:var(--muted)}
+.logo{width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,var(--gold),var(--gold-2));display:grid;place-items:center;font-weight:700;color:#07110b;font-family:Playfair,serif}
+.brand .name{font-weight:600;letter-spacing:0.06em}
+.nav{display:flex;gap:14px;align-items:center}
+.nav a{color:rgba(235,232,225,0.85);text-decoration:none;padding:8px 12px;border-radius:10px;font-size:14px}
+.nav a:focus, .nav a:hover{background:rgba(255,255,255,0.02);transform:translateY(-2px)}
+
+/* hero */
+.hero{display:grid;grid-template-columns: 1fr 420px;gap:46px;align-items:center;padding:80px 0}
+@media (max-width:980px){ .hero{grid-template-columns:1fr;padding:36px 0} .hero-right{order:-1} }
+
+.hero-left h1{font-family:'Playfair Display', serif;font-weight:600;font-size:46px;line-height:1.02;margin:0;color:var(--muted)}
+.hero-left h1 .accent{color:var(--gold)}
+.lead{margin-top:14px;color:var(--muted-2);font-size:17px;max-width:680px}
+
+/* badge / buttons */
+.badge{display:inline-block;margin-top:22px;padding:9px 14px;background:var(--glass);border-radius:12px;border:1px solid rgba(255,255,255,0.03);font-size:13px;color:var(--muted-2)}
+.actions{margin-top:30px;display:flex;gap:12px}
+.btn{padding:12px 18px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--muted);cursor:pointer;font-weight:600}
+.btn-primary{background:linear-gradient(180deg,var(--gold),var(--gold-2));color:#07110b;border:none;box-shadow:0 12px 30px rgba(0,0,0,0.5)}
+.btn:focus{outline:2px solid rgba(191,161,97,0.18);outline-offset:3px}
+
+/* card */
+.card{background:linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.01));border-radius:var(--radius);padding:18px;border:1px solid rgba(255,255,255,0.03);box-shadow:var(--card-shadow)}
+
+/* mini projection */
+.mini-stats{display:flex;gap:14px;align-items:center;justify-content:space-between}
+.mini-stats .num{font-family:'Playfair Display', serif;font-size:22px;font-weight:600}
+.mini-stats .meta{font-size:12px;color:var(--muted-2)}
+
+/* tiles */
+.tiles{display:flex;gap:14px;margin-top:18px}
+.tile{flex:1;padding:18px;border-radius:12px;background:linear-gradient(180deg,rgba(255,255,255,0.01),transparent);cursor:pointer;transition:transform .28s var(--ease),box-shadow .28s var(--ease)}
+.tile:hover{transform:translateY(-8px);box-shadow:0 28px 60px rgba(0,0,0,0.6)}
+
+/* charts */
+.chart-wrap{height:320px;padding:8px}
+@media (max-width:980px){ .chart-wrap{height:260px} }
+
+/* infographic area */
+.info-grid{display:grid;grid-template-columns:1fr 420px;gap:30px;align-items:start;margin-top:22px}
+@media (max-width:980px){ .info-grid{grid-template-columns:1fr} }
+
+/* controls */
+.controls{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px}
+.control{display:flex;flex-direction:column;gap:6px}
+.control label{font-size:13px;color:var(--muted-2)}
+.control input[type=range]{width:260px}
+
+/* footer */
+.footer{padding:28px 36px;text-align:center;color:rgba(235,232,225,0.6);font-size:13px;border-top:1px solid rgba(255,255,255,0.01);margin-top:40px}
+
+/* floating WhatsApp */
+.wa{position:fixed;right:26px;bottom:26px;z-index:999;display:flex;flex-direction:column;align-items:center;gap:10px}
+.wa .label{background:rgba(255,255,255,0.03);padding:8px 14px;border-radius:999px;font-size:13px;border:1px solid rgba(255,255,255,0.02)}
+.wa a.btn{width:56px;height:56px;border-radius:999px;background:linear-gradient(180deg,var(--gold),var(--gold-2));display:grid;place-items:center;color:#07110b;text-decoration:none;box-shadow:0 12px 30px rgba(0,0,0,0.55)}
+.wa a.btn:hover{transform:translateY(-6px)}
+
+/* small utilities */
+.kv{display:flex;gap:12px;align-items:center}
+.kv div{font-size:13px}
+.fade{opacity:0;transform:translateY(8px) scale(.996);transition:all .8s var(--ease)}
+.fade.visible{opacity:1;transform:none}
